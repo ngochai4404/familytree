@@ -41,6 +41,7 @@ public class UtilCaculator {
                         .setPostition(box.getWidth()-1,box.getHeight()-1)
                         .build();
                 countTopLeft=calculator(findMemberId(current.getMotherId()),temp,false).getWidth();
+                current.setCountTopLeft(countTopLeft);
             }
         }
 
@@ -51,6 +52,7 @@ public class UtilCaculator {
                         .setPostition(box.getWidth()+1,box.getHeight()-1)
                         .build();
                 countTopRight=calculator(findMemberId(current.getFatherId()),temp,false).getHeight();
+                current.setCountTopRight(countTopRight);
             }
         }
 
@@ -67,7 +69,6 @@ public class UtilCaculator {
 
                 }
             }
-
         }
         if(checkCouple && current.getCoupleId()>0){
             countCouple=3;
@@ -86,15 +87,17 @@ public class UtilCaculator {
                     countBottomLeft+=newBox.getWidth();
                 }
             }
+            current.setCountBottomLeft(countBottomLeft);
         }
         //so sanh TH co vo chong
         countBottomRight=Math.max(countBottomRight,countCouple);
+        current.setCountBottomRight(countBottomRight);
         //TH co ca bo va me
         if(box.istopRight() && box.istopLeft()){
             if(current.getFatherId()!=-1 && current.getMotherId()!=-1){
-                countTop = countTopLeft + countBottomRight+1;
+                countTop = countTopLeft + countTopRight+1;
             }else{
-                countTop = countTopLeft + countBottomRight;
+                countTop = countTopLeft + countTopRight;
             }
         }
 

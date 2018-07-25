@@ -7,6 +7,7 @@ import com.google.gson.Gson;
  */
 
 public class Member {
+    //data
     private int id;
     private String name;
     private int icon;
@@ -14,6 +15,11 @@ public class Member {
     private int fatherId = -1;
     private int motherId = -1;
     private int gender;
+    //draw
+    private int countTopLeft=0;
+    private int countTopRight=0;
+    private int countBottomLeft=0;
+    private int countBottomRight=0;
 
     public Member(String name, int icon,int gender) {
         this.name = name;
@@ -78,6 +84,38 @@ public class Member {
 
     public void setMotherId(int motherId) {
         this.motherId = motherId;
+    }
+
+    public int getCountTopLeft() {
+        return countTopLeft;
+    }
+
+    public void setCountTopLeft(int countTopLeft) {
+        this.countTopLeft = countTopLeft;
+    }
+
+    public int getCountTopRight() {
+        return countTopRight;
+    }
+
+    public void setCountTopRight(int countTopRight) {
+        this.countTopRight = countTopRight;
+    }
+
+    public int getCountBottomLeft() {
+        return countBottomLeft;
+    }
+
+    public void setCountBottomLeft(int countBottomLeft) {
+        this.countBottomLeft = countBottomLeft;
+    }
+
+    public int getCountBottomRight() {
+        return countBottomRight;
+    }
+
+    public void setCountBottomRight(int countBottomRight) {
+        this.countBottomRight = countBottomRight;
     }
 
     @Override
