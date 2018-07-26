@@ -37,6 +37,7 @@ public class MemberTable {
                     + COLUMN_COUPLE + " INTEGER"
                     + ")";
     public int insertMember(Member member, DatabaseManager data) {
+        Log.d("insertDB",member.getName());
         SQLiteDatabase db = data.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(COLUMN_NAME, member.getName());

@@ -15,6 +15,12 @@ import java.util.List;
 public class UtilCaculator {
     List<Member> members;
     int mX, mY;
+
+    /**
+     * get X,Y (Me)
+     * @param members
+     * @return
+     */
     public Point getXY(List<Member> members){
         this.members = members;
         if(members.size()>0){
@@ -26,6 +32,14 @@ public class UtilCaculator {
         }
         return new Point(mX,-mY);
     }
+
+    /**
+     * calculator Member's Box (width, height)
+     * @param current
+     * @param box
+     * @param checkCouple ?drawCouple:noDrawCouple
+     * @return
+     */
     Box calculator(Member current, Box box, boolean checkCouple){
         int countBottomLeft=0;
         int countBottomRight=0;
@@ -33,7 +47,9 @@ public class UtilCaculator {
         int countTopRight=0;
         int countTop =0;
         int countCouple=1;
+        // update Y (Me)
         mY = Math.min(mY,box.getHeight());
+        //draw mother
         if(box.istopLeft()) {
             if(current.getMotherId()>0){
                 Box temp = new Box.BoxBuilder()
@@ -44,18 +60,18 @@ public class UtilCaculator {
                 current.setCountTopLeft(countTopLeft);
             }
         }
-
+        //draw father
         if( box.istopRight()) {
             if(current.getFatherId()>0){
                 Box temp = new Box.BoxBuilder()
                         .setDirection(true,true,true,false)
                         .setPostition(box.getWidth()+1,box.getHeight()-1)
                         .build();
-                countTopRight=calculator(findMemberId(current.getFatherId()),temp,false).getHeight();
+                countTopRight=calculator(findMemberId(current.getFatherId()),temp,false).getWidth();
                 current.setCountTopRight(countTopRight);
             }
         }
-
+        //draw childreno
         if( box.isbottomRight()) {
             for(Member m:members){
                 if ( (m.getFatherId()>0 && m.getFatherId() == current.getId())
@@ -70,9 +86,11 @@ public class UtilCaculator {
                 }
             }
         }
+        //caculator width (couple)
         if(checkCouple && current.getCoupleId()>0){
             countCouple=3;
         }
+        //draw brother, sister
         if( box.isbottomLeft() ){
             for(Member m:members){
                 if(m.getId()==current.getId())
@@ -90,6 +108,7 @@ public class UtilCaculator {
             current.setCountBottomLeft(countBottomLeft);
         }
         //so sanh TH co vo chong
+
         countBottomRight=Math.max(countBottomRight,countCouple);
         current.setCountBottomRight(countBottomRight);
         //TH co ca bo va me
@@ -100,14 +119,11 @@ public class UtilCaculator {
                 countTop = countTopLeft + countTopRight;
             }
         }
-
         int maxW=Math.max(countTop,countBottomRight+countBottomLeft);
         box.setPos(Math.max(1,maxW),1);
-        Log.d("TreeMember",current.getName()+" "+box.getWidth());
-        if(current.getId() == 1){
-            Log.d("TreeMember",countBottomLeft+" "+countBottomRight);
-        }
-        mX =countBottomLeft;
+
+        // update X (Me)
+        mX =Math.max(countBottomLeft,countTopLeft);
         return box;
 //
     }
