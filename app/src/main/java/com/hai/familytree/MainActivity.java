@@ -32,7 +32,8 @@ public class MainActivity extends AppCompatActivity implements RefreshAction {
         initData();
         draw();
     }
-    void initView(){
+
+    void initView() {
         mRoot = findViewById(R.id.root_view);
     }
 
@@ -66,6 +67,7 @@ public class MainActivity extends AppCompatActivity implements RefreshAction {
 
     /**
      * draw View
+     *
      * @param member
      * @param x
      * @param y
@@ -79,6 +81,7 @@ public class MainActivity extends AppCompatActivity implements RefreshAction {
 
     /**
      * get position member and call function draw
+     *
      * @param current
      * @param box
      * @param checkCouple
@@ -158,7 +161,7 @@ public class MainActivity extends AppCompatActivity implements RefreshAction {
                     continue;
                 if ((m.getFatherId() > 0 && m.getFatherId() == current.getFatherId())
                         || (m.getMotherId() > 0 && m.getMotherId() == current.getMotherId())) {
-                    countBottomLeft+=m.getCountBottomRight();
+                    countBottomLeft += m.getCountBottomRight();
                     Box temp = new Box.BoxBuilder()
                             .setDirection(false, false, false, true)
                             .setPostition(box.getWidth() - countBottomLeft, box.getHeight())
@@ -177,7 +180,6 @@ public class MainActivity extends AppCompatActivity implements RefreshAction {
                 countTop = countTopLeft + countTopRight;
             }
         }
-
         //call function drawView
         addView(current, box.getWidth(), box.getHeight());
         //get Max width
@@ -189,6 +191,7 @@ public class MainActivity extends AppCompatActivity implements RefreshAction {
 
     /**
      * find Member by id
+     *
      * @param id
      * @return
      */

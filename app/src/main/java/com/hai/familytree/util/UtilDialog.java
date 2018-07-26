@@ -182,29 +182,29 @@ public class UtilDialog {
         alert.show();
     }
 
-    static void  delete(Member current, List<Member> members, DatabaseManager db) {
+    static void delete(Member current, List<Member> members, DatabaseManager db) {
         for (Member m : members) {
-            if (m.getId()!=1){
-                if((m.getFatherId() == current.getId()
+            if (m.getId() != 1) {
+                if ((m.getFatherId() == current.getId()
                         || m.getMotherId() == current.getId())) {
                     delete(m, members, db);
                 }
-                if(m.getCoupleId() == current.getId()){
+                if (m.getCoupleId() == current.getId()) {
                     m.setCoupleId(-1);
-                    new MemberTable().updateMember(m,db);
+                    new MemberTable().updateMember(m, db);
                 }
-            }else{
-                if(m.getFatherId() == current.getId()){
+            } else {
+                if (m.getFatherId() == current.getId()) {
                     m.setFatherId(-1);
-                    new MemberTable().updateMember(m,db);
+                    new MemberTable().updateMember(m, db);
                 }
-                if(m.getMotherId() == current.getId()){
+                if (m.getMotherId() == current.getId()) {
                     m.setMotherId(-1);
-                    new MemberTable().updateMember(m,db);
+                    new MemberTable().updateMember(m, db);
                 }
             }
         }
-        new MemberTable().deleteNote(current,db);
+        new MemberTable().deleteNote(current, db);
 
     }
 }

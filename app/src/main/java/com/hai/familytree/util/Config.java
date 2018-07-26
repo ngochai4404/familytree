@@ -5,5 +5,5 @@ package com.hai.familytree.util;
  */
 
 public class Config {
-    public static final int distance=300;
+    public static final int distance = 300;
 }

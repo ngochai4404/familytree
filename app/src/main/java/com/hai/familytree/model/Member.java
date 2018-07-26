@@ -16,12 +16,12 @@ public class Member {
     private int motherId = -1;
     private int gender;
     //draw
-    private int countTopLeft=0;
-    private int countTopRight=0;
-    private int countBottomLeft=0;
-    private int countBottomRight=0;
+    private int countTopLeft = 0;
+    private int countTopRight = 0;
+    private int countBottomLeft = 0;
+    private int countBottomRight = 0;
 
-    public Member(String name, int icon,int gender) {
+    public Member(String name, int icon, int gender) {
         this.name = name;
         this.icon = icon;
         this.gender = gender;
