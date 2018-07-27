@@ -94,13 +94,13 @@ public class UtilDialog {
                     // draw sister
                 }
                 if (cbFather.isChecked()) {
-                    father = new Member("Bố", 2, 1);
+                    father = new Member(mContext.getString(R.string.father), 2, 1);
                     father.setId(new MemberTable().insertMember(father, db));
                     member.setFatherId(father.getId());
                     new MemberTable().updateMember(member, db);
                 }
                 if (cbMother.isChecked()) {
-                    mother = new Member("Mẹ", 3, 0);
+                    mother = new Member(mContext.getString(R.string.mother), 3, 0);
                     mother.setId(new MemberTable().insertMember(mother, db));
                     member.setMotherId(mother.getId());
                     new MemberTable().updateMember(member, db);
@@ -110,6 +110,31 @@ public class UtilDialog {
                     mother.setCoupleId(father.getId());
                     new MemberTable().updateMember(father, db);
                     new MemberTable().updateMember(mother, db);
+                }
+                if (cbCouple.isChecked()) {
+                    if (member.getGender() == 1) {
+                        Member couple = new Member(mContext.getString(R.string.wife), 3, 0);
+                        couple.setId(new MemberTable().insertMember(couple, db));
+                        member.setCoupleId(couple.getId());
+                        new MemberTable().updateMember(member, db);
+                        for (Member m : memberList) {
+                            if (m.getFatherId() == member.getId()) {
+                                m.setMotherId(couple.getId());
+                                new MemberTable().updateMember(m, db);
+                            }
+                        }
+                    } else {
+                        Member couple = new Member(mContext.getString(R.string.husbband), 4, 1);
+                        couple.setId(new MemberTable().insertMember(couple, db));
+                        member.setCoupleId(couple.getId());
+                        new MemberTable().updateMember(member, db);
+                        for (Member m : memberList) {
+                            if (m.getMotherId() == member.getId()) {
+                                m.setFatherId(couple.getId());
+                                new MemberTable().updateMember(m, db);
+                            }
+                        }
+                    }
                 }
                 refreshAction.refresh();
                 dialog.dismiss();
@@ -200,6 +225,10 @@ public class UtilDialog {
                 }
                 if (m.getMotherId() == current.getId()) {
                     m.setMotherId(-1);
+                    new MemberTable().updateMember(m, db);
+                }
+                if (m.getCoupleId() == current.getId()) {
+                    m.setCoupleId(-1);
                     new MemberTable().updateMember(m, db);
                 }
             }

@@ -1,6 +1,7 @@
 package com.hai.familytree.util;
 
 import android.graphics.Point;
+import android.util.Log;
 
 import com.hai.familytree.model.Box;
 import com.hai.familytree.model.Member;
@@ -48,6 +49,7 @@ public class UtilCaculator {
         int countTopRight = 0;
         int countTop = 0;
         int countCouple = 1;
+        Member father=null,mother=null;
         // update Y (Me)
         mY = Math.min(mY, box.getHeight());
         //draw mother
@@ -57,8 +59,14 @@ public class UtilCaculator {
                         .setDirection(true, true, true, false)
                         .setPostition(box.getWidth() - 1, box.getHeight() - 1)
                         .build();
-                countTopLeft = calculator(findMemberId(current.getMotherId()), temp, false).getWidth();
+                mother= findMemberId(current.getMotherId());
+                countTopLeft = calculator(mother, temp, false).getWidth();
                 current.setCountTopLeft(countTopLeft);
+                if(box.istopRight()&&current.getFatherId()==-1){
+                    countTopLeft=Math.max(mother.getCountBottomLeft(),mother.getCountTopLeft());
+                    current.setCountTopLeft(countTopLeft);
+                    current.setCountTopRight(Math.max(mother.getCountBottomRight(),mother.getCountTopRight()));
+                }
             }
         }
         //draw father
@@ -68,11 +76,17 @@ public class UtilCaculator {
                         .setDirection(true, true, true, false)
                         .setPostition(box.getWidth() + 1, box.getHeight() - 1)
                         .build();
-                countTopRight = calculator(findMemberId(current.getFatherId()), temp, false).getWidth();
+                father= findMemberId(current.getFatherId());
+                countTopRight = calculator(father, temp, false).getWidth();
                 current.setCountTopRight(countTopRight);
+                if(box.istopLeft()&&current.getMotherId()==-1){
+                    countTopRight=Math.max(father.getCountBottomRight(),father.getCountTopRight());
+                    current.setCountTopRight(countTopRight);
+                    current.setCountTopLeft(Math.max(father.getCountBottomLeft(),father.getCountTopLeft()));
+                }
             }
         }
-        //draw childreno
+        //draw children
         if (box.isbottomRight()) {
             for (Member m : members) {
                 if ((m.getFatherId() > 0 && m.getFatherId() == current.getId())
@@ -83,14 +97,10 @@ public class UtilCaculator {
                             .build();
                     Box newBox = calculator(m, temp, true);
                     countBottomRight += newBox.getWidth();
-
                 }
             }
         }
-        //caculator width (couple)
-        if (checkCouple && current.getCoupleId() > 0) {
-            countCouple = 3;
-        }
+
         //draw brother, sister
         if (box.isbottomLeft()) {
             for (Member m : members) {
@@ -106,23 +116,23 @@ public class UtilCaculator {
                     countBottomLeft += newBox.getWidth();
                 }
             }
+
             current.setCountBottomLeft(countBottomLeft);
         }
         //so sanh TH co vo chong
-        countBottomRight = Math.max(countBottomRight, countCouple);
-        current.setCountBottomRight(countBottomRight);
+//        countBottomRight = Math.max(countBottomRight, countCouple);
+//        current.setCountBottomRight(countBottomRight);
         //TH co ca bo va me
-        if (box.istopRight() && box.istopLeft()) {
-            if (current.getFatherId() != -1 && current.getMotherId() != -1) {
-                countTop = countTopLeft + countTopRight + 1;
-            } else {
-                countTop = countTopLeft + countTopRight;
-            }
-        }
-        int maxW = Math.max(countTop, countBottomRight + countBottomLeft);
-        box.setPos(Math.max(1, maxW), 1);
+
+        int maxLeft = Math.max(countBottomLeft, countTopLeft);
+        int maxRight = Math.max(countTopRight,countBottomRight);
+        int maxWidth = maxLeft+maxRight+1;
+        box.setPos(Math.max(1, maxWidth), 1);
+        current.setWidth(maxWidth);
+
+        Log.d("treeLog6",current.getName()+" "+maxLeft+" "+maxRight+" "+maxWidth);
         // update X (Me)
-        mX = Math.max(countBottomLeft, countTopLeft);
+        mX = maxLeft;
         return box;
 //
     }

@@ -1,9 +1,11 @@
 package com.hai.familytree;
 
+import android.graphics.Color;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
 import android.widget.FrameLayout;
 
 import com.hai.familytree.custom.MemberView;
@@ -62,7 +64,26 @@ public class MainActivity extends AppCompatActivity implements RefreshAction {
                 .setDirection(true, true, true, true)
                 .setPostition(p.x, p.y)
                 .build();
+        //calculator draw view
         calculatorDraw(members.get(0), box, true);
+        //draw line
+       // calculatorLine(members);
+    }
+    void calculatorLine(List<Member> members){
+        for(Member m1: members){
+            for(Member m2:members){
+                if(m1.getId()==m2.getId()){
+                    continue;
+                }
+                if(m1.getCoupleId() == m2.getCoupleId()){
+                    if(m1.getGender()==1){
+                        drawLine(m2.getX()*distance,m2.getY()*distance/2,(m1.getX()-m2.getX())*distance,2);
+                    }else{
+                        drawLine(m1.getX()*distance,m1.getY()*distance/2,(m2.getX()-m1.getX())*distance,2);
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -79,6 +100,18 @@ public class MainActivity extends AppCompatActivity implements RefreshAction {
         mRoot.addView(new MemberView(MainActivity.this, member, this), params);
     }
 
+    void drawLine(int x,int y, int width,int height) {
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(distance, distance);
+        params.leftMargin = x ;
+        params.topMargin = y;
+        params.width = width;
+        params.height = height;
+        View line = new View(this);
+        line.setBackgroundColor(Color.BLACK);
+        line.setLayoutParams(params);
+        mRoot.addView(line);
+    }
+
     /**
      * get position member and call function draw
      *
@@ -90,36 +123,56 @@ public class MainActivity extends AppCompatActivity implements RefreshAction {
     Box calculatorDraw(Member current, Box box, boolean checkCouple) {
         int countBottomLeft = 0;
         int countBottomRight = 0;
-        int countTopLeft = 1;
+        int countTopLeft = 0;
         int countTopRight = 0;
         int countTop = 0;
         int countCouple = 1;
+        Member father = null, mother = null;
         // draw mother
         if (box.istopLeft()) {
             if (current.getMotherId() > 0) {
-                int x = current.getCountTopLeft() / 2 + 1;
-                if (current.getFatherId() < 0) {
+                mother = findMemberId(current.getMotherId());
+                int x;
+                if (current.getFatherId() == -1) {
                     x = 0;
+                } else {
+                    x = Math.max(mother.getCountBottomRight(), mother.getCountTopRight()) + 1;
                 }
                 Box temp = new Box.BoxBuilder()
                         .setDirection(true, true, true, false)
                         .setPostition(box.getWidth() - x, box.getHeight() - 1)
                         .build();
-                countTopLeft = calculatorDraw(findMemberId(current.getMotherId()), temp, false).getWidth();
+                countTopLeft = calculatorDraw(mother, temp, false).getWidth();
+                current.setCountTopLeft(countTopLeft);
+                if (box.istopRight() && current.getFatherId() == -1) {
+                    countTopLeft = Math.max(mother.getCountBottomLeft(), mother.getCountTopLeft());
+                    current.setCountTopLeft(countTopLeft);
+                    current.setCountTopRight(Math.max(mother.getCountBottomRight(), mother.getCountTopRight()));
+                }
             }
         }
         // draw father
         if (box.istopRight()) {
             if (current.getFatherId() > 0) {
-                int x = current.getCountTopRight() / 2 + 1;
-                if (current.getMotherId() < 0 && x == 1) {
+                father = findMemberId(current.getFatherId());
+                int x;
+                if (current.getMotherId() == -1) {
                     x = 0;
+                } else {
+                    x = Math.max(father.getCountBottomLeft(), father.getCountTopLeft()) + 1;
                 }
                 Box temp = new Box.BoxBuilder()
                         .setDirection(true, true, true, false)
                         .setPostition(box.getWidth() + x, box.getHeight() - 1)
                         .build();
-                countTopRight = calculatorDraw(findMemberId(current.getFatherId()), temp, false).getWidth();
+                countTopRight = calculatorDraw(father, temp, false).getWidth();
+                current.setCountTopRight(countTopRight);
+                if (box.istopLeft() && current.getMotherId() == -1) {
+                    countTopRight = Math.max(father.getCountBottomRight(), father.getCountTopRight());
+                    current.setCountTopRight(countTopRight);
+                    current.setCountTopLeft(Math.max(father.getCountBottomLeft(), father.getCountTopLeft()));
+                }
+
             }
         }
         //draw children
@@ -129,10 +182,9 @@ public class MainActivity extends AppCompatActivity implements RefreshAction {
                         || (m.getMotherId() > 0 && m.getMotherId() == current.getId())) {
                     Box temp = new Box.BoxBuilder()
                             .setDirection(false, false, false, true)
-                            .setPostition(box.getWidth() + countBottomRight, box.getHeight() + 1)
+                            .setPostition(box.getWidth() + countBottomRight + 1, box.getHeight() + 1)
                             .build();
-                    Box newBox = calculatorDraw(m, temp, true);
-                    countBottomRight += newBox.getWidth();
+                    countBottomRight += calculatorDraw(m, temp, true).getWidth();
                 }
             }
 
@@ -161,30 +213,35 @@ public class MainActivity extends AppCompatActivity implements RefreshAction {
                     continue;
                 if ((m.getFatherId() > 0 && m.getFatherId() == current.getFatherId())
                         || (m.getMotherId() > 0 && m.getMotherId() == current.getMotherId())) {
-                    countBottomLeft += m.getCountBottomRight();
+                    countBottomLeft += m.getWidth();
                     Box temp = new Box.BoxBuilder()
                             .setDirection(false, false, false, true)
                             .setPostition(box.getWidth() - countBottomLeft, box.getHeight())
                             .build();
-                    Box newBox = calculatorDraw(m, temp, true);
+                    calculatorDraw(m, temp, true).getWidth();
                 }
             }
         }
         //so sanh TH co vo chong
-        countBottomRight = Math.max(countBottomRight, countCouple);
+//        countBottomRight = Math.max(countBottomRight, countCouple);
         //TH co ca bo va me
-        if (box.istopRight() && box.istopLeft()) {
-            if (current.getFatherId() != -1 && current.getMotherId() != -1) {
-                countTop = countTopLeft + countTopRight + 1;
-            } else {
-                countTop = countTopLeft + countTopRight;
-            }
-        }
+//        if (box.istopRight() && box.istopLeft()) {
+//            if (current.getFatherId() != -1 && current.getMotherId() != -1) {
+//                countTop = countTopLeft + countTopRight + 1;
+//            } else {
+//                countTop = countTopLeft + countTopRight;
+//            }
+//        }
         //call function drawView
+        current.setX(box.getWidth());
+        current.setY(box.getHeight());
         addView(current, box.getWidth(), box.getHeight());
         //get Max width
-        int maxW = Math.max(countTop, countBottomRight + countBottomLeft);
-        box.setPos(Math.max(1, maxW), box.getHeight());
+        int maxLeft = Math.max(countBottomLeft, countTopLeft);
+        int maxRight = Math.max(countTopRight, countBottomRight);
+        int maxWidth = maxLeft + maxRight + 1;
+        box.setPos(maxWidth, box.getHeight());
+        Log.d("treeLog8", current.getName() + " " + maxLeft + " " + maxRight);
         return box;
 //
     }

@@ -15,12 +15,16 @@ public class Member {
     private int fatherId = -1;
     private int motherId = -1;
     private int gender;
-    //draw
+    //condition
     private int countTopLeft = 0;
     private int countTopRight = 0;
     private int countBottomLeft = 0;
     private int countBottomRight = 0;
-
+    //draw
+    private int width=0;
+    private int x=0;
+    private int y=0;
+    //
     public Member(String name, int icon, int gender) {
         this.name = name;
         this.icon = icon;
@@ -28,6 +32,30 @@ public class Member {
     }
 
     public Member() {
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public void setWidth(int width) {
+        this.width = width;
+    }
+
+    public int getX() {
+        return x;
+    }
+
+    public void setX(int x) {
+        this.x = x;
+    }
+
+    public int getY() {
+        return y;
+    }
+
+    public void setY(int y) {
+        this.y = y;
     }
 
     public int getGender() {
