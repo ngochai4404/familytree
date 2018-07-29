@@ -1,5 +1,9 @@
 package com.hai.familytree;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.os.Bundle;
@@ -11,7 +15,6 @@ import android.widget.FrameLayout;
 import com.hai.familytree.custom.MemberView;
 import com.hai.familytree.db.DatabaseManager;
 import com.hai.familytree.db.table.MemberTable;
-import com.hai.familytree.interfaces.RefreshAction;
 import com.hai.familytree.model.Box;
 import com.hai.familytree.model.Member;
 import com.hai.familytree.util.Config;
@@ -19,11 +22,13 @@ import com.hai.familytree.util.UtilCaculator;
 
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements RefreshAction {
+public class MainActivity extends AppCompatActivity {
+    public static final String ACTION_RENDER = "ACTION_RENDER";
     int distance = Config.distance;
     FrameLayout mRoot;
     DatabaseManager databaseManager;
     List<Member> members;
+    BroadcastReceiver receiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,19 +72,56 @@ public class MainActivity extends AppCompatActivity implements RefreshAction {
         //calculator draw view
         calculatorDraw(members.get(0), box, true);
         //draw line
-       // calculatorLine(members);
+        calculatorLine(members);
+
     }
-    void calculatorLine(List<Member> members){
-        for(Member m1: members){
-            for(Member m2:members){
-                if(m1.getId()==m2.getId()){
+
+    void calculatorLine(List<Member> members) {
+        for (Member m1 : members) {
+            for (Member m2 : members) {
+                if (m1.getId() == m2.getId()) {
                     continue;
                 }
-                if(m1.getCoupleId() == m2.getCoupleId()){
-                    if(m1.getGender()==1){
-                        drawLine(m2.getX()*distance,m2.getY()*distance/2,(m1.getX()-m2.getX())*distance,2);
-                    }else{
-                        drawLine(m1.getX()*distance,m1.getY()*distance/2,(m2.getX()-m1.getX())*distance,2);
+                if (m1.getCoupleId() == m2.getId()) {
+                    if (m1.getX() < m2.getX()) {
+                        int x, y, width, height;
+                        x = (m1.getX() + 1) * distance;
+                        y = (m1.getY()) * distance + distance / 4;
+                        width = (m2.getX() - m1.getX() - 1) * distance;
+                        height = 2;
+                        drawLine(x, y, width, height);
+                    } else {
+                        int x, y, width, height;
+                        x = (m2.getX() + 1) * distance;
+                        y = (m2.getY()) * distance + distance / 4;
+                        width = (m1.getX() - m2.getX() - 1) * distance;
+                        height = 2;
+                        drawLine(x, y, width, height);
+                    }
+                }
+                //draw line brother,sister
+                if ((m1.getFatherId() > 0 && m1.getFatherId() == m2.getFatherId())
+                        || (m1.getMotherId() > 0 && m1.getMotherId() == m2.getMotherId())) {
+                    if (m1.getX() < m2.getX()) {
+                        int x, y, width, height;
+                        //draw line horizontal
+                        x = (m1.getX()) * distance + distance / 2;
+                        y = (m1.getY()) * distance - distance / 8;
+                        width = (m2.getX() - m1.getX()) * distance;
+                        height = 2;
+                        drawLine(x, y, width, height);
+                        //draw line horizontal vertital
+                        x = (m1.getX()) * distance + distance / 2;
+                        y = (m1.getY()) * distance - distance / 8;
+                        width = 2;
+                        height = distance / 8;
+                        drawLine(x, y, width, height);
+                        x = (m2.getX()) * distance + distance / 2;
+                        y = (m2.getY()) * distance - distance / 8;
+                        width = 2;
+                        height = distance / 8;
+                        drawLine(x, y, width, height);
+
                     }
                 }
             }
@@ -93,19 +135,18 @@ public class MainActivity extends AppCompatActivity implements RefreshAction {
      * @param x
      * @param y
      */
+
     void addView(Member member, int x, int y) {
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(distance, distance);
         params.leftMargin = x * distance;
         params.topMargin = y * distance;
-        mRoot.addView(new MemberView(MainActivity.this, member, this), params);
+        mRoot.addView(new MemberView(MainActivity.this, member), params);
     }
 
-    void drawLine(int x,int y, int width,int height) {
-        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(distance, distance);
-        params.leftMargin = x ;
+    void drawLine(int x, int y, int width, int height) {
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(width, height);
+        params.leftMargin = x;
         params.topMargin = y;
-        params.width = width;
-        params.height = height;
         View line = new View(this);
         line.setBackgroundColor(Color.BLACK);
         line.setLayoutParams(params);
@@ -125,8 +166,6 @@ public class MainActivity extends AppCompatActivity implements RefreshAction {
         int countBottomRight = 0;
         int countTopLeft = 0;
         int countTopRight = 0;
-        int countTop = 0;
-        int countCouple = 1;
         Member father = null, mother = null;
         // draw mother
         if (box.istopLeft()) {
@@ -175,8 +214,17 @@ public class MainActivity extends AppCompatActivity implements RefreshAction {
 
             }
         }
+        //draw couple
+        if (checkCouple && current.getCoupleId() > 0) {
+            Box temp = new Box.BoxBuilder()
+                    .setDirection(false, false, false, false)
+                    .setPostition(box.getWidth() + 2, box.getHeight())
+                    .build();
+            calculatorDraw(findMemberId(current.getCoupleId()), temp, false);
+        }
         //draw children
         if (box.isbottomRight()) {
+            boolean firstDraw = true;
             for (Member m : members) {
                 if ((m.getFatherId() > 0 && m.getFatherId() == current.getId())
                         || (m.getMotherId() > 0 && m.getMotherId() == current.getId())) {
@@ -184,30 +232,31 @@ public class MainActivity extends AppCompatActivity implements RefreshAction {
                             .setDirection(false, false, false, true)
                             .setPostition(box.getWidth() + countBottomRight + 1, box.getHeight() + 1)
                             .build();
-                    countBottomRight += calculatorDraw(m, temp, true).getWidth();
+                    calculatorDraw(m, temp, true);
+                    countBottomRight += m.getWidth();
+                    //draw line (parent)
+                    if (firstDraw) {
+                        int x = (m.getX()) * distance + distance / 2;
+                        int y = (m.getY() - 1) * distance + distance / 2;
+                        int width = 2;
+                        int height = distance / 2;
+                        drawLine(x, y, width, height);
+                        firstDraw = false;
+                    }
                 }
             }
 
         }
-        //draw couple
-        if (checkCouple && current.getCoupleId() > 0) {
-            countCouple = 3;
-            if (current.getGender() == 1) {
-                Box temp = new Box.BoxBuilder()
-                        .setDirection(false, false, false, false)
-                        .setPostition(box.getWidth() - 2, box.getHeight())
-                        .build();
-                calculatorDraw(findMemberId(current.getCoupleId()), temp, false);
-            } else {
-                Box temp = new Box.BoxBuilder()
-                        .setDirection(false, false, false, false)
-                        .setPostition(box.getWidth() + 2, box.getHeight())
-                        .build();
-                calculatorDraw(findMemberId(current.getCoupleId()), temp, false);
-            }
-        }
         //draw brother, sister
         if (box.isbottomLeft()) {
+            //draw line (parent)
+            if (current.getFatherId() > 0 || current.getMotherId() > 0) {
+                int x = (box.getWidth()) * distance + distance / 2;
+                int y = (box.getHeight() - 1) * distance + distance / 2;
+                int width = 2;
+                int height = distance / 2;
+                drawLine(x, y, width, height);
+            }
             for (Member m : members) {
                 if (m.getId() == current.getId())
                     continue;
@@ -222,17 +271,6 @@ public class MainActivity extends AppCompatActivity implements RefreshAction {
                 }
             }
         }
-        //so sanh TH co vo chong
-//        countBottomRight = Math.max(countBottomRight, countCouple);
-        //TH co ca bo va me
-//        if (box.istopRight() && box.istopLeft()) {
-//            if (current.getFatherId() != -1 && current.getMotherId() != -1) {
-//                countTop = countTopLeft + countTopRight + 1;
-//            } else {
-//                countTop = countTopLeft + countTopRight;
-//            }
-//        }
-        //call function drawView
         current.setX(box.getWidth());
         current.setY(box.getHeight());
         addView(current, box.getWidth(), box.getHeight());
@@ -264,12 +302,26 @@ public class MainActivity extends AppCompatActivity implements RefreshAction {
     @Override
     protected void onResume() {
         super.onResume();
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(ACTION_RENDER);
+        receiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                refresh();
+            }
+        };
+        registerReceiver(receiver, intentFilter);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        unregisterReceiver(receiver);
     }
 
     /**
      * refresh all member (reDraw)
      */
-    @Override
     public void refresh() {
         members = new MemberTable().getAllMembers(databaseManager);
         draw();

@@ -9,7 +9,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.hai.familytree.R;
-import com.hai.familytree.interfaces.RefreshAction;
 import com.hai.familytree.model.Member;
 import com.hai.familytree.util.Config;
 import com.hai.familytree.util.UtilDialog;
@@ -41,15 +40,13 @@ public class MemberView extends LinearLayout {
             R.drawable.ic_member_16,
             R.drawable.ic_member_17
     };
-    RefreshAction rfAction;
 
-    public MemberView(Context context, Member member, RefreshAction refreshAction) {
+    public MemberView(Context context, Member member) {
         super(context);
         this.mContext = context;
         this.mMember = member;
         setOrientation(VERTICAL);
         setGravity(Gravity.CENTER);
-        this.rfAction = refreshAction;
         initView();
     }
 
@@ -83,19 +80,19 @@ public class MemberView extends LinearLayout {
         btnAdd.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
-                UtilDialog.showDialogAdd(mContext, mMember, rfAction);
+                UtilDialog.showDialogAdd(mContext, mMember);
             }
         });
         img.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
-                UtilDialog.showDialogChangeInfo(mContext, mMember, rfAction);
+                UtilDialog.showDialogChangeInfo(mContext, mMember);
             }
         });
         btnDel.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
-                UtilDialog.showDialogDelete(mContext, mMember, rfAction);
+                UtilDialog.showDialogDelete(mContext, mMember);
             }
         });
     }

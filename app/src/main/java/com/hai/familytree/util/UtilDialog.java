@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -15,12 +16,12 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
 
+import com.hai.familytree.MainActivity;
 import com.hai.familytree.R;
 import com.hai.familytree.custom.adapter.IconAdapter;
 import com.hai.familytree.db.DatabaseManager;
 import com.hai.familytree.db.table.MemberTable;
 import com.hai.familytree.interfaces.ItemOnClick;
-import com.hai.familytree.interfaces.RefreshAction;
 import com.hai.familytree.model.Member;
 
 import java.util.List;
@@ -30,7 +31,7 @@ import java.util.List;
  */
 
 public class UtilDialog {
-    public static void showDialogAdd(final Context mContext, final Member member, final RefreshAction refreshAction) {
+    public static void showDialogAdd(final Context mContext, final Member member) {
         final Dialog dialog = new Dialog(mContext);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.dialog_add);
@@ -39,8 +40,6 @@ public class UtilDialog {
         final CheckBox cbCouple = dialog.findViewById(R.id.cb_couple);
         final Spinner spSon = dialog.findViewById(R.id.sp_son);
         final Spinner spDaughter = dialog.findViewById(R.id.sp_daughter);
-        final Spinner spBrother = dialog.findViewById(R.id.sp_brother);
-        final Spinner spSister = dialog.findViewById(R.id.sp_sister);
         Button btnSave = dialog.findViewById(R.id.btn_save);
         if (member.getMotherId() > 0 || member.getFatherId() > 0) {
             cbMother.setVisibility(View.GONE);
@@ -52,12 +51,8 @@ public class UtilDialog {
         btnSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.d("memberList", member.toString());
                 int son = Integer.parseInt(spSon.getSelectedItem().toString());
                 int daughter = Integer.parseInt(spDaughter.getSelectedItem().toString());
-                int brother = Integer.parseInt(spBrother.getSelectedItem().toString());
-                int sister = Integer.parseInt(spSister.getSelectedItem().toString());
-                Log.d("insertDB", son + " " + daughter + " " + brother + " " + sister);
                 DatabaseManager db = new DatabaseManager(mContext);
                 List<Member> memberList = new MemberTable().getAllMembers(db);
                 Member father = null, mother = null;
@@ -87,12 +82,6 @@ public class UtilDialog {
                         new MemberTable().insertMember(m, db);
                     }
                 }
-                if (brother > 0) {
-                    // draw brother
-                }
-                if (sister > 0) {
-                    // draw sister
-                }
                 if (cbFather.isChecked()) {
                     father = new Member(mContext.getString(R.string.father), 2, 1);
                     father.setId(new MemberTable().insertMember(father, db));
@@ -114,6 +103,7 @@ public class UtilDialog {
                 if (cbCouple.isChecked()) {
                     if (member.getGender() == 1) {
                         Member couple = new Member(mContext.getString(R.string.wife), 3, 0);
+                        couple.setCoupleId(member.getId());
                         couple.setId(new MemberTable().insertMember(couple, db));
                         member.setCoupleId(couple.getId());
                         new MemberTable().updateMember(member, db);
@@ -125,6 +115,7 @@ public class UtilDialog {
                         }
                     } else {
                         Member couple = new Member(mContext.getString(R.string.husbband), 4, 1);
+                        couple.setCoupleId(member.getId());
                         couple.setId(new MemberTable().insertMember(couple, db));
                         member.setCoupleId(couple.getId());
                         new MemberTable().updateMember(member, db);
@@ -136,14 +127,19 @@ public class UtilDialog {
                         }
                     }
                 }
-                refreshAction.refresh();
+                renger(mContext);
                 dialog.dismiss();
             }
         });
         dialog.show();
     }
 
-    public static void showDialogChangeInfo(final Context mContext, final Member member, final RefreshAction refreshAction) {
+    private static void renger(Context mContext) {
+        Intent intent = new Intent(MainActivity.ACTION_RENDER);
+        mContext.sendBroadcast(intent);
+    }
+
+    public static void showDialogChangeInfo(final Context mContext, final Member member) {
         final Dialog dialog = new Dialog(mContext);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.dialog_infomation);
@@ -170,14 +166,14 @@ public class UtilDialog {
                 Log.d("iconMember", member.getIcon() + "");
                 DatabaseManager db = new DatabaseManager(mContext);
                 new MemberTable().updateMember(member, db);
-                refreshAction.refresh();
+                renger(mContext);
                 dialog.dismiss();
             }
         });
         dialog.show();
     }
 
-    public static void showDialogDelete(final Context mContext, final Member member, final RefreshAction refreshAction) {
+    public static void showDialogDelete(final Context mContext, final Member member) {
         AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
         builder.setTitle(mContext.getString(R.string.delete));
         builder.setMessage(member.getName());
@@ -191,7 +187,7 @@ public class UtilDialog {
                     delete(member, members, db);
 
                 }
-                refreshAction.refresh();
+                renger(mContext);
                 dialog.dismiss();
             }
         });

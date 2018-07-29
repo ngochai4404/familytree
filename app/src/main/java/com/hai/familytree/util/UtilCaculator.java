@@ -49,7 +49,7 @@ public class UtilCaculator {
         int countTopRight = 0;
         int countTop = 0;
         int countCouple = 1;
-        Member father=null,mother=null;
+        Member father = null, mother = null;
         // update Y (Me)
         mY = Math.min(mY, box.getHeight());
         //draw mother
@@ -59,13 +59,13 @@ public class UtilCaculator {
                         .setDirection(true, true, true, false)
                         .setPostition(box.getWidth() - 1, box.getHeight() - 1)
                         .build();
-                mother= findMemberId(current.getMotherId());
+                mother = findMemberId(current.getMotherId());
                 countTopLeft = calculator(mother, temp, false).getWidth();
                 current.setCountTopLeft(countTopLeft);
-                if(box.istopRight()&&current.getFatherId()==-1){
-                    countTopLeft=Math.max(mother.getCountBottomLeft(),mother.getCountTopLeft());
+                if (box.istopRight() && current.getFatherId() == -1) {
+                    countTopLeft = Math.max(mother.getCountBottomLeft(), mother.getCountTopLeft());
                     current.setCountTopLeft(countTopLeft);
-                    current.setCountTopRight(Math.max(mother.getCountBottomRight(),mother.getCountTopRight()));
+                    current.setCountTopRight(Math.max(mother.getCountBottomRight(), mother.getCountTopRight()));
                 }
             }
         }
@@ -76,13 +76,13 @@ public class UtilCaculator {
                         .setDirection(true, true, true, false)
                         .setPostition(box.getWidth() + 1, box.getHeight() - 1)
                         .build();
-                father= findMemberId(current.getFatherId());
+                father = findMemberId(current.getFatherId());
                 countTopRight = calculator(father, temp, false).getWidth();
                 current.setCountTopRight(countTopRight);
-                if(box.istopLeft()&&current.getMotherId()==-1){
-                    countTopRight=Math.max(father.getCountBottomRight(),father.getCountTopRight());
+                if (box.istopLeft() && current.getMotherId() == -1) {
+                    countTopRight = Math.max(father.getCountBottomRight(), father.getCountTopRight());
                     current.setCountTopRight(countTopRight);
-                    current.setCountTopLeft(Math.max(father.getCountBottomLeft(),father.getCountTopLeft()));
+                    current.setCountTopLeft(Math.max(father.getCountBottomLeft(), father.getCountTopLeft()));
                 }
             }
         }
@@ -100,7 +100,6 @@ public class UtilCaculator {
                 }
             }
         }
-
         //draw brother, sister
         if (box.isbottomLeft()) {
             for (Member m : members) {
@@ -116,21 +115,18 @@ public class UtilCaculator {
                     countBottomLeft += newBox.getWidth();
                 }
             }
-
             current.setCountBottomLeft(countBottomLeft);
         }
-        //so sanh TH co vo chong
-//        countBottomRight = Math.max(countBottomRight, countCouple);
-//        current.setCountBottomRight(countBottomRight);
-        //TH co ca bo va me
-
+        //draw couple
+        if (checkCouple && current.getCoupleId() > 0) {
+            countTopRight = Math.max(countTopRight, 2);
+        }
         int maxLeft = Math.max(countBottomLeft, countTopLeft);
-        int maxRight = Math.max(countTopRight,countBottomRight);
-        int maxWidth = maxLeft+maxRight+1;
+        int maxRight = Math.max(countTopRight, countBottomRight);
+        int maxWidth = maxLeft + maxRight + 1;
         box.setPos(Math.max(1, maxWidth), 1);
         current.setWidth(maxWidth);
-
-        Log.d("treeLog6",current.getName()+" "+maxLeft+" "+maxRight+" "+maxWidth);
+        Log.d("treeLog6", current.getName() + " " + maxLeft + " " + maxRight + " " + maxWidth);
         // update X (Me)
         mX = maxLeft;
         return box;
