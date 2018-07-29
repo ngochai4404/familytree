@@ -241,6 +241,13 @@ public class MainActivity extends AppCompatActivity {
                         int width = 2;
                         int height = distance / 2;
                         drawLine(x, y, width, height);
+                        if (current.getCoupleId() < 0) {
+                            int x2 = (current.getX() + 2) * distance;
+                            int y2 = (m.getY() - 1) * distance + distance / 2;
+                            int width2 = distance / 2;
+                            int height2 = 2;
+                            drawLine(x2, y2, width2, height2);
+                        }
                         firstDraw = false;
                     }
                 }
